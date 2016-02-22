@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+
+  <meta http-equiv="Content-Type" content="text/html" charset="utf-8">
+  <link rel="icon" type="image/vnd.microsoft.ico" href="favicon.ico">
+  <title>ACT211 final project by Fabien Forestier</title> 
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+  <script src='https://cdnjs.cloudflare.com/ajax/libs/jquery.simpleWeather/3.0.2/jquery.simpleWeather.min.js'></script>
+  <link href="weather.css" type="text/css" rel="stylesheet" />
+  <link rel="stylesheet" href="../bootstrap-3.3.6-dist/bootstrap-3.3.6-dist/css/bootstrap.css"  type="text/css"/>
+  <link rel="stylesheet" href="../bootstrap-3.3.6-dist/bootstrap-3.3.6-dist/css/bootstrap-theme.min.css"  type="text/css"/>
+<style>
+.footer {
+  margin-top:40px;
+  padding-top: 20px;
+  bottom: 0;
+	position: fixed;
+  width: 100%;
+  /* Set the fixed height of the footer here */
+  height: 60px;
+  background-color: #f5f5f5;
+}
+
+#center {
+	text-align: center;
+    margin-bottom:20px;
+}
+
+.navbar-text.title{
+	
+	color:orange;
+}
+</style>
+<script>
+var baseURL ="http://webservices.missouriwestern.edu/users/fforestier/act211/final/finder.php?distinct=state&table=stationList&order=state&database="
+var baseURL2 ="http://webservices.missouriwestern.edu/users/fforestier/act211/final/finder.php?state=STATE&table=stationList&order=place&database="
+var baseURL3 ="http://webservices.missouriwestern.edu/users/fforestier/act211/final/finder.php?table=stationList&database="
+var url,database;
+var checkedValue="";
+$('document').ready(function(){
+	
+	$('#database').change(function(){
+	    if($('#database').val()=="0")
+		{
+			$("#pre").css('opacity','0');
+			$("#weather").css('opacity','0');
+			$("#weather").css('box-shadow', 'none');
+			$('#place option:not(:first)').remove();
+		}
+		database = $('#database').val();	
+		$('#states option:not(:first)').remove()
+		getStateList()			
+	})
+	
+	
+	$('#states').change(function(){
+		if($('#states').val()=="0")
+		{
+			$("#pre").css('opacity','0');
+			$("#weather").css('opacity','0');
+			$("#weather").css('box-shadow', 'none');
+		}
+		$('#place option:not(:first)').remove()
+		getPlaceList()
+	})
+	
+	$('#place').change(function(){
+	if($('#place').val()=="0")
+	{
+		$("#pre").css('opacity','0');
+		$("#weather").css('opacity','0');
+		$("#weather").css('box-shadow', 'none');
+	}else
+	{
+		$("#pre").css('opacity','1');
+		$("#weather").css('opacity','1');
+		$("#weather").css('box-shadow', '10px 10px 5px grey');
+	}
+	getDataPlace();
+	var location = $('#states').val()+", "+$('#place').val().split('_').join(' ');
+	loadWeather(location);
+	})
+	
+	$("#pre").css('opacity','0');	
+	
+	$( "input" ).on( "click", function() {
+		var temp=[];
+		$.each($("input:checked"), function(){            
+                temp.push($(this).val());
+            });
+		checkedValue=temp.toString();
+		getDataPlace()
+	});
+	
+	
+	 
+})
+
+function getStateList(){
+	url = baseURL+database
+	//console.log(url)
+	var states = [];
+	$.getJSON(url, function(data){
+	$.each(data, function(index, place){
+	//states.push("<tr><td>"+index+'</td><td>'+place.state+'</td></tr>')
+	states.push("<option value="+place.state+"> "+place.state+"</option>")
+	})
+	//$("#codes").html(states)
+	$("#first").after(states)
+	})	
+}
+
+function getPlaceList(){
+	var places = [];
+	url = baseURL2.replace("STATE",$('#states').val())
+	url = url+database
+	//console.log(url)
+	$.getJSON(url,function(data){
+	$.each(data, function(index, val){
+	places.push("<option value="+val.place.split(' ').join('_')+"> "+val.place+"</option>")
+	})
+	$("#second").after(places)
+	})
+}
+
+function getDataPlace(){
+	var details = [];
+	var t='';
+	url = baseURL3+database+"&place="+$('#place').val()+"&whichstate="+$("#states").val()+"&data="+checkedValue
+	console.log(url)
+	$.getJSON(url,function(data){
+	$.each(data, function(index, val){
+	if(val.country)
+	{
+		t="The weather station in "+val.place+", "+val.state+" in the country of "+val.country+" is "+val.station+"."
+	}else
+	{
+		t="The weather station in "+val.place+", "+val.state+" is "+val.station+"."
+	}
+	if(val.latitude)
+	{
+		t+=" The latitude is "+val.latitude
+		if(val.longitude)
+		{
+			t+=", the longitude is "+val.longitude
+			if(val.elevation)
+			{
+				t+=" and the elevation is "+val.elevation+"."
+			}else
+			{
+				t+="."
+			}
+		}else
+		{
+			t+="."
+		}
+	}else
+	{
+		if(val.longitude)
+		{
+			t+="The longitude is "+val.longitude
+			if(val.elevation)
+			{
+				t+=" and the elevation is "+val.elevation+"."
+			}else
+			{
+				t+="."
+			}
+		}else
+		{
+			if(val.elevation)
+			{
+				t+="The elevation is "+val.elevation+"."
+			}
+		}
+	}
+	t+="<br>"
+	details.push(t)
+	})
+	$("#pre").html(details)
+	})
+}
+
+function loadWeather(location, woeid) {
+  $.simpleWeather({
+    location: location,
+    woeid: woeid,
+    unit: 'f',
+    success: function(weather) {
+	  if(weather.temp >= 75) {
+        $('#weather').css("background", '#F7AC57');
+      } else {
+        $('#weather').css("background", '#0091c2');
+      }
+	   
+      html = '<table><td><img style="float:left;" src="'+weather.image+'"></td><td><h2>'+weather.temp+'&deg;'+weather.units.temp+'</h2></td><table>';
+      html += '<ul><li>'+weather.city+', '+weather.region+'</li>';
+      html += '<li class="currently">'+weather.currently+'</li>';
+      html += '<li>'+weather.alt.temp+'&deg;C</li></ul>';
+      
+      $("#weather").html(html);
+    },
+    error: function(error) {
+      $("#weather").html('No data for this station');
+    }
+  });
+}
+</script>
+</head>
+<body>
+<nav class="navbar navbar-inverse navbar-fixed-top text-center">
+      <div class="container text-center">
+          <p class="navbar-text title">Weather</p>
+      </div>
+</nav>
+<div class="container increasemargin text-center">
+
+	<select id="database">
+	<option id="premier" value="0">Pick a database</option>
+	<option id="weatherstations" value="weatherstations">Weatherstations</option>
+	</select>
+
+	<select id="states" >
+	<option id="first" value="0">Pick a state</option>
+	</select>
+
+	<select id="place">
+	<option id="second" value="0">Pick a place</option>
+	</select>
+
+	<br><br>
+	
+	<div class="checkbox">
+	  <label>
+		<input type="checkbox" value="latitude">
+		Latitude
+	  </label>
+	  <label>
+		<input type="checkbox" value="longitude">
+		Longitude
+	  </label>
+	  <label>
+		<input type="checkbox" value="elevation">
+		Elevation
+	  </label>
+	  <label>
+		<input type="checkbox" value="country">
+		Country
+	  </label>
+	</div>
+
+	<br>
+	
+	<div id="pre" class="well well-sm"></div>
+	<br>
+	<div id="center">
+	<div id="weather"></div>
+	</div>
+	<br><br>
+</div>		
+
+<footer class="footer">
+      <div class="container">
+        <p class="text-center text-muted">Final project by Fabien FORESTIER</p>
+      </div>
+</footer>
+	
+			<script src="../bootstrap-3.3.6-dist/bootstrap-3.3.6-dist/js/bootstrap.js"></script>
+</body>
+</html>

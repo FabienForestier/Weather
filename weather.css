@@ -1,0 +1,57 @@
+body {
+  padding: 25px 0;
+  font: 13px 'Open Sans', "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif;
+  background-color: #ccc;
+}
+
+#weather {
+  display: inline-block;
+  text-align:center;
+  text-transform: uppercase;
+  padding: 25px 25px 25px 25px;
+  border-radius:8px;
+  
+}
+
+#weather h1 {
+  margin: 0;
+  color: #fff;
+  font-family: weather;
+  font-size: 250px;
+  font-weight: normal;
+  line-height: 1.0;
+}
+
+#weather h2 {
+	margin-bottom: -10px;
+	margin-top: -30px;
+  color: #fff;
+  font-size: 85px;
+  font-weight: 300;
+  text-align: center;
+  text-shadow: 0px 1px 3px rgba(0, 0, 0, 0.15);
+}
+
+#weather ul {
+  margin: 0;
+  padding: 0;
+}
+
+#weather li {
+  background: #fff;
+  background: rgba(255,255,255,0.90);
+  margin: 0 15px;
+  padding: 20px;
+  display: inline-block;
+  border-radius: 5px;
+}
+
+#weather .updated {
+  opacity: 0.45;
+}
+
+td{ text-align:center;}
+
+.increasemargin{
+	margin-top:50px;
+}
